@@ -15,14 +15,15 @@ const char *ssid = "DiscoHair";
 const char *password = "brownlywedding";
 
 String color = "";
-int brightness = 100;
-String type = "color";
+int brightness = 50;
+String type = "snow";
 int onoff = 1;
 
 long red;
 long green;
 long blue;
 
+int tick = 0;
 
 const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
@@ -51,6 +52,12 @@ void handleRoot() {
   "    xmlHttp.send( null );"
   "    return xmlHttp.responseText;"
   "  }"
+  "  function changeType(typeName) {"
+  "    var xmlHttp = new XMLHttpRequest();"
+  "    xmlHttp.open( \"POST\", \"http://192.168.4.1/change?type=\"+typeName, false );"
+  "    xmlHttp.send( null );"
+  "    return xmlHttp.responseText;"
+  "  }"
   "</script>"
   "<style type=\"text/css\">"
   "  body, html{"
@@ -59,7 +66,11 @@ void handleRoot() {
   "</style>"
   "Brightness:"
   "<input type=\"range\" min=\"0\" max=\"100\" step=\"1\" id=\"brightness\" onchange=\"brightness(this.value);\" /><br />"
-  "Color: <input type=\"color\" id=\"ledcolor\" onchange=\"color(this.value);\" /><br />";
+  "Color: <input type=\"color\" id=\"ledcolor\" onchange=\"color(this.value);\" /><br />"
+  "<input type=\"button\" id=\"snow\" value=\"Snow\" onclick=\"changeType('snow');\" /><br />"
+  "<input type=\"button\" id=\"candycane\" value=\"candycane\" onclick=\"changeType('candycane');\" /><br />"
+  "<input type=\"button\" id=\"christmascombo\" value=\"christmascombo\" onclick=\"changeType('christmascombo');\" /><br />"
+  "<input type=\"button\" id=\"colormode\" value=\"Color Mode\" onclick=\"changeType('color');\" /><br />";
 
   server.send(200, "text/html", returnHtml);
   
@@ -132,9 +143,39 @@ void loop() {
 
   FastLED.setBrightness(brightness);
 
-  for(int i = 0; i < NUM_LEDS; i++) {
-    leds[i].setRGB( red, green, blue);
+  if (type == "color") {
+    for(int i = 0; i < NUM_LEDS; i++) {
+      leds[i].setRGB( red, green, blue);
+    }
+  } else if (type == "snow") {
+    for(int i = 0; i < NUM_LEDS; i++) {
+      leds[i].setRGB( 0,0,0);
+    }
+    int target = (int)tick/25;
+    leds[8-target].setRGB( 255,255,255);
+  } else if (type == "christmascombo") {
+    for(int i = 0; i < NUM_LEDS; i++) {
+      if ((i+1)%2 == 0) {
+        leds[i].setRGB( 255,0,0);
+      } else {
+        leds[i].setRGB( 0,255,0);
+      }
+    }
+  } else if (type == "candycane") {
+    for(int i = 0; i < NUM_LEDS; i++) {
+      if ((i+1)%2 == 0) {
+        leds[i].setRGB( 255,0,0);
+      } else {
+        leds[i].setRGB( 125,125,125);
+      }
+    }
   }
   FastLED.show();
-  
+  delay(5);
+
+  tick++;
+
+  if (tick == 224) {
+    tick = 0;
+  }
 }
